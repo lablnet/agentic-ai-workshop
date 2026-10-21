@@ -1,6 +1,6 @@
 # AI Agent Seminar Examples
 
-Simple Python examples for a university seminar: tool calling, multi-agent collaboration, event-driven automation, guardrails, human approval, and retrieval-augmented generation (RAG). Gemini provides the language model; tools are shared plain Python functions.
+Simple Python examples for a university seminar: tool calling, multi-agent collaboration, event-driven automation, guardrails, human approval, conversation memory, and retrieval-augmented generation (RAG). Gemini provides the language model; tools are shared plain Python functions.
 
 ## Setup
 
@@ -124,6 +124,32 @@ Approved versions are saved to unique Markdown files under `human-in-the-loop-ag
 
 The example uses an in-memory checkpoint and the same thread ID to pause and resume within one process. Closing the process loses its checkpoint. See the [approval workflow walkthrough](human-in-the-loop-agent/README.md).
 
+## Run the memory agent
+
+```bash
+python3 memory-agent/agent.py
+# Or choose the starting thread:
+python3 memory-agent/agent.py --thread student-a
+```
+
+The agent remembers messages within each conversation thread. Try this sequence in one running session:
+
+```text
+You [demo]: My name is Ali, and I prefer Python examples.
+You [demo]: Explain recursion briefly using my preferred language.
+You [demo]: What is my name?
+You [demo]: /history
+You [demo]: /thread other
+You [other]: What is my name?
+You [other]: /thread demo
+You [demo]: What programming language do I prefer?
+You [demo]: /quit
+```
+
+In `demo`, the assistant should recall Ali and Python. In `other`, it should say it does not know the name. Switching back restores the original conversation. `/history` displays the current thread's saved messages without making a model request; each normal message makes a Gemini request. The terminal also shows the saved message count.
+
+Memory is kept in RAM using LangGraph checkpointing and is lost when the program exits. It is saved conversation history, not retraining the model or persistent personal memory. See the [code walkthrough](memory-agent/README.md).
+
 ## Run the multi-tool and RAG notebooks
 
 Use the same root environment. Install the optional notebook and retrieval dependencies:
@@ -152,6 +178,7 @@ simple-agent/                # Basic tool calling, with and without LangGraph
 multi-agent-collaboration/    # Supervisor + three specialist ReAct agents
 guardrails-agent/            # Input checks, course scope and output validation
 human-in-the-loop-agent/     # Draft, pause, human decision, then local save
+memory-agent/                # Conversation history isolated by thread ID
 autonomous-agent/
     temp/                    # Incoming PDF and Markdown files
     data/                    # Generated HTML pages and processing history
