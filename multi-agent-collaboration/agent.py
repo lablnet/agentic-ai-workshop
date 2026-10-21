@@ -6,10 +6,12 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from langchain.agents import create_agent
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from tools.main import calculate, get_crypto_price, get_weather
+from crypto_agent import build_crypto_agent
+from math_agent import build_math_agent
+from supervisor_agent import build_supervisor_agent
+from weather_agent import build_weather_agent
 
 
 def run_specialist(agent, name, task):
@@ -24,22 +26,10 @@ def run_specialist(agent, name, task):
 
 
 def build_team(model):
-    # 1. Each specialist is a complete ReAct agent with its own tool.
-    crypto_agent = create_agent(
-        model=model, tools=[get_crypto_price], name="crypto_agent",
-        system_prompt="You are the crypto price specialist. Use your tool for prices. "
-        "Return the coin, USD price and any API error accurately. Never invent prices.",
-    )
-    weather_agent = create_agent(
-        model=model, tools=[get_weather], name="weather_agent",
-        system_prompt="You are the weather specialist. Use your tool for current "
-        "weather. Include the matched location and units. Never invent readings.",
-    )
-    math_agent = create_agent(
-        model=model, tools=[calculate], name="math_agent",
-        system_prompt="You are the maths specialist. Use calculate for arithmetic. "
-        "Return the result with a short explanation. Do not invent missing inputs.",
-    )
+    # 1. Build the specialists defined in their own files.
+    crypto_agent = build_crypto_agent(model)
+    weather_agent = build_weather_agent(model)
+    math_agent = build_math_agent(model)
 
     # 2. Wrap the agents as tools so the supervisor can choose whom to ask.
     def ask_crypto_agent(task: str) -> str:
@@ -55,18 +45,8 @@ def build_team(model):
         return run_specialist(math_agent, "Math agent", task)
 
     # 3. The supervisor is also a ReAct agent. Its tools are other agents.
-    return create_agent(
-        model=model,
-        tools=[ask_crypto_agent, ask_weather_agent, ask_math_agent],
-        name="supervisor",
-        system_prompt="You lead crypto, weather and maths specialists. Delegate every "
-        "supported task to the relevant specialist; do not do their work yourself. "
-        "Use only agents needed for the user's question. For dependent tasks, obtain "
-        "the first result before delegating the next task, passing the actual numbers. "
-        "For example, get a coin price before asking maths to calculate its cost. "
-        "Combine the specialists' results into one concise answer. Report tool failures "
-        "honestly and do not calculate with unavailable data. For unsupported requests, "
-        "explain your available capabilities.",
+    return build_supervisor_agent(
+        model, [ask_crypto_agent, ask_weather_agent, ask_math_agent],
     )
 
 

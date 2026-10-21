@@ -47,9 +47,19 @@ These are illustrative placeholders. `collaboration.log` records actual assignme
 
 ## Seminar walkthrough
 
-1. Open the shared `../tools/` folder: `crypto.py`, `weather.py`, and `maths.py` contain plain Python functions. `main.py` collects them for imports.
-2. In `build_team()`, show three `create_agent()` calls with different prompts and tools.
-3. Show `ask_crypto_agent()`, `ask_weather_agent()`, and `ask_math_agent()`: each is a plain function that wraps a complete specialist agent. `create_agent()` converts it into a tool automatically, without `@tool`.
-4. Show the final `create_agent()` call: the supervisor's tools are those three wrappers.
-5. Run a maths-only question, then the default crypto + maths question. Compare which specialists are called in the logs.
-6. Explain the distinction: a normal tool executes a function; an agent tool invokes another model + tools loop before returning its answer.
+```text
+multi-agent-collaboration/
+├── prompts.py           # Instructions for all four agents
+├── crypto_agent.py      # Crypto ReAct agent + price tool
+├── weather_agent.py     # Weather ReAct agent + weather tool
+├── math_agent.py        # Maths ReAct agent + calculator
+├── supervisor_agent.py  # Supervisor ReAct agent
+└── agent.py             # Assemble the team, delegate, log and run
+```
+
+1. Open `prompts.py` to explain each agent's role.
+2. Open a specialist file, such as `crypto_agent.py`: one `create_agent()` call connects its prompt and tool.
+3. Open `agent.py`: `build_team()` creates the specialists and wraps them in three plain delegation functions.
+4. Open `supervisor_agent.py`: its tools are those delegation functions, so it can choose which specialist to call.
+5. Follow `main()` in `agent.py`: it loads the root configuration, creates the model, assembles the team, and handles the user's question.
+6. Compare a maths-only question with the default crypto + maths question in the logs. A normal tool executes a function; an agent tool runs another model/tool loop before returning an answer.
