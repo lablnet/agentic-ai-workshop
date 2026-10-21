@@ -26,6 +26,7 @@ class Page(BaseModel):
 
 
 def extract_text(source, content):
+    """Read plain text from a PDF or Markdown file; enforce demo size limits."""
     if source.suffix.lower() == ".pdf":
         reader = PdfReader(io.BytesIO(content))
         text = "\n\n".join(page.extract_text() or "" for page in reader.pages)
@@ -39,6 +40,7 @@ def extract_text(source, content):
 
 
 def convert_to_html(client, text):
+    """Ask Gemini for structured HTML, then sanitize tags for a static page."""
     response = client.models.generate_content(
         model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
         contents=text,
@@ -124,6 +126,7 @@ def scan_folder(client, folder, processed, failed):
 
 
 def main():
+    # Poll temp/ forever; fingerprints in .processed.json skip unchanged files.
     folder = Path(__file__).resolve().parent
     load_dotenv(folder.parent / ".env", override=True)
     parser = argparse.ArgumentParser(description=__doc__)
@@ -145,6 +148,7 @@ def main():
     failed = {}
     logging.info("WATCHING | %s | drop a PDF or Markdown file here", folder / "temp")
     with genai.Client(api_key=os.environ["GEMINI_API_KEY"]) as client:
+        # Event loop: detect new/changed docs, convert, write atomically to data/.
         while True:
             scan_folder(client, folder, processed, failed)
             time.sleep(args.interval)

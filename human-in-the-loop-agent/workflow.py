@@ -20,6 +20,16 @@ class ReviewState(TypedDict):
 
 
 def build_workflow(model, output_folder):
+    """
+    Build the human-in-the-loop announcement graph.
+
+    Args:
+        model: Chat model for the draft agent.
+        output_folder: Where approved announcements are written.
+
+    Returns:
+        Compiled LangGraph with checkpointing for interrupt/resume.
+    """
     writer = build_draft_agent(model)
 
     def draft(state):
@@ -53,6 +63,7 @@ def build_workflow(model, output_folder):
         logging.info("SAVED | %s", path)
         return {"saved_path": path}
 
+    # draft -> review (interrupt) -> save only when approved.
     graph = StateGraph(ReviewState)
     graph.add_node("draft", draft)
     graph.add_node("review", review)
@@ -61,4 +72,5 @@ def build_workflow(model, output_folder):
     graph.add_edge("draft", "review")
     graph.add_conditional_edges("review", lambda state: state["approved"], {True: "save", False: END})
     graph.add_edge("save", END)
+    # Checkpointer keeps state across interrupt() and Command(resume=...).
     return graph.compile(checkpointer=InMemorySaver())

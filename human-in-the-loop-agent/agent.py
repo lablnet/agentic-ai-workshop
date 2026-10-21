@@ -14,6 +14,7 @@ from workflow import build_workflow
 
 
 def ask_for_review():
+    """Collect approve, edit, or reject from stdin for graph.resume."""
     while True:
         action = input("Choose approve / edit / reject: ").strip().lower()
         if action == "edit":
@@ -54,11 +55,13 @@ def main():
     )
     graph = build_workflow(model, folder / "data")
     run_id = uuid4().hex
+    # thread_id ties this run to checkpoint state for interrupt/resume.
     config = {"configurable": {"thread_id": run_id}}
     result = graph.invoke({"request": args.request, "run_id": run_id,
                            "draft": "", "approved": False, "saved_path": ""}, config=config)
     if result.get("__interrupt__"):
         print("\nPAUSED FOR REVIEW\n\n" + result["__interrupt__"][0].value["draft"] + "\n")
+        # Resume the review node with the human's decision.
         result = graph.invoke(Command(resume=ask_for_review()), config=config)
     print(f"\nSaved: {result['saved_path']}" if result["approved"] else "\nRejected. No announcement saved.")
 

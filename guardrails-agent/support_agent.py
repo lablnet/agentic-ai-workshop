@@ -12,6 +12,16 @@ from prompts import SCOPE_PROMPT, SUPPORT_PROMPT
 
 
 def answer_question(client, question):
+    """
+    Run input, scope, answer, and output guardrails for one question.
+
+    Args:
+        client: Gemini client.
+        question: Raw user question.
+
+    Returns:
+        Validated SupportAnswer.
+    """
     # 1. Deterministic checks run before any text is sent to Gemini.
     clean_question = validate_input(question)
     logging.info("INPUT | passed%s", "; contact details redacted" if clean_question != question.strip() else "")

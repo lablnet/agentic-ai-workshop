@@ -14,6 +14,7 @@ from support_agent import answer_question
 
 
 def main():
+    # Load env, run the guarded pipeline, print JSON or exit on block/API error.
     load_dotenv(Path(__file__).resolve().parents[1] / ".env", override=True)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("question", nargs="?", default="What is the prerequisite for CS201?")
@@ -24,6 +25,7 @@ def main():
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("google_genai.models").setLevel(logging.WARNING)
     with genai.Client(api_key=os.environ["GEMINI_API_KEY"]) as client:
+        # All guardrails run inside answer_question.
         result = answer_question(client, args.question)
     print("\n" + result.model_dump_json(indent=2))
 

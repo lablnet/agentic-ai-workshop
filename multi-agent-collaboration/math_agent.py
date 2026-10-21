@@ -7,6 +7,8 @@ from tools.main import calculate
 
 
 def build_math_agent(model):
+    # Create the agent
+    # The create_agent function creates an agent that can use the tools provided.
     return create_agent(
         model=model,
         tools=[calculate],

@@ -35,6 +35,7 @@ def redact_contact_details(text: str) -> str:
 
 
 def validate_input(question: str) -> str:
+    """Reject bad input and redact contact details before any model call."""
     if not question.strip():
         raise GuardrailError("The question cannot be empty.")
     if len(question) > 2000:
@@ -43,6 +44,7 @@ def validate_input(question: str) -> str:
 
 
 def validate_output(text: str) -> SupportAnswer:
+    """Parse model JSON and enforce length and no leaked contact details."""
     try:
         result = SupportAnswer.model_validate_json(text)
     except ValidationError:

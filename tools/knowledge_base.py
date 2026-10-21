@@ -7,12 +7,15 @@ from pathlib import Path
 
 def search_in_knowledge_base(query: str) -> str:
     """Search Pakistan university course outlines and return the five closest passages."""
+    # Import numpy and ollama
     import numpy as np
     import ollama
 
     logging.info("TOOL | search_in_knowledge_base | %s", query)
+    # Load the knowledge base
     path = Path(__file__).resolve().parents[1] / "multi-tool agent" / "hec_outline_embeddings.json"
     data = json.loads(path.read_text(encoding="utf-8"))
+    # Call the Ollama API
     response = ollama.embeddings(model=data.get("model_name", "mxbai-embed-large"), prompt=query)
     query_vector = np.array(response["embedding"])
     vectors = np.array(data["embeddings"])
@@ -21,7 +24,11 @@ def search_in_knowledge_base(query: str) -> str:
     lengths = np.linalg.norm(vectors, axis=1) * np.linalg.norm(query_vector)
     scores = np.divide(vectors @ query_vector, lengths,
                        out=np.zeros(len(vectors)), where=lengths != 0)
+
+    # Get the best results
     best = np.argsort(scores)[::-1][:5]
+    # Format the results
     results = [{"text": data["texts"][index], "similarity": float(scores[index]),
                 "index": int(index)} for index in best]
+    # Return the results as a JSON string
     return json.dumps(results)
