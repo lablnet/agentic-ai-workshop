@@ -1,6 +1,6 @@
 # AI Agent Seminar Examples
 
-Simple Python examples for a university seminar: tool calling, multi-agent collaboration, event-driven automation, and retrieval-augmented generation (RAG). Gemini provides the language model; tools are shared plain Python functions.
+Simple Python examples for a university seminar: tool calling, multi-agent collaboration, event-driven automation, guardrails, human approval, and retrieval-augmented generation (RAG). Gemini provides the language model; tools are shared plain Python functions.
 
 ## Setup
 
@@ -94,6 +94,36 @@ python3 autonomous-agent/agent.py --interval 3
 
 Logs are appended to `autonomous-agent/autonomous.log`. Stop the watcher with **Ctrl+C**. See the [event loop and seminar walkthrough](autonomous-agent/README.md).
 
+## Run the guardrails agent
+
+```bash
+python3 guardrails-agent/agent.py
+python3 guardrails-agent/agent.py "What is the prerequisite for CS301?"
+python3 guardrails-agent/agent.py "My email is student@example.com and phone is +92 300 1234567. Can I take CS201?"
+python3 guardrails-agent/agent.py "What is Bitcoin's price?"
+```
+
+The assistant answers course questions using a fictional three-course catalogue. The contact-details example demonstrates redaction before Gemini sees the question. The Bitcoin question should be rejected by the model-based scope check. Logs show input, scope, and output checks; a rejected request exits with code 1.
+
+An allowed question uses two Gemini calls: a scope decision, then a structured answer. The output must contain nonempty `answer` and `next_step` fields, pass length limits, and contain no contact details matching the demo patterns. Scope checks can make mistakes, regexes do not detect every form of personal data, and format validation does not verify factual accuracy. See the [guardrails walkthrough](guardrails-agent/README.md).
+
+## Run the human-in-the-loop agent
+
+```bash
+python3 human-in-the-loop-agent/agent.py
+python3 human-in-the-loop-agent/agent.py "Draft an announcement for a Python workshop on 29 October 2026 at 2 PM in Lab 2."
+```
+
+Gemini drafts an announcement, then LangGraph pauses with `interrupt()`. The terminal displays the draft and offers three choices:
+
+- `approve`: resume the graph and save the displayed draft.
+- `edit`: enter a replacement over multiple lines, finish with `END`, then type `yes` to approve that version.
+- `reject`: resume the graph and stop without saving an announcement.
+
+Approved versions are saved to unique Markdown files under `human-in-the-loop-agent/data/`. Nothing is sent or published. Try separate runs with approval, editing, and rejection to demonstrate each route. Ctrl+C cancels the review.
+
+The example uses an in-memory checkpoint and the same thread ID to pause and resume within one process. Closing the process loses its checkpoint. See the [approval workflow walkthrough](human-in-the-loop-agent/README.md).
+
 ## Run the multi-tool and RAG notebooks
 
 Use the same root environment. Install the optional notebook and retrieval dependencies:
@@ -120,6 +150,8 @@ Select the kernel belonging to the root `.venv`. Do not create a separate notebo
 pyproject.toml               # Shared package and dependencies
 simple-agent/                # Basic tool calling, with and without LangGraph
 multi-agent-collaboration/    # Supervisor + three specialist ReAct agents
+guardrails-agent/            # Input checks, course scope and output validation
+human-in-the-loop-agent/     # Draft, pause, human decision, then local save
 autonomous-agent/
     temp/                    # Incoming PDF and Markdown files
     data/                    # Generated HTML pages and processing history
