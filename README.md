@@ -55,6 +55,13 @@ A multi-purpose AI agent built with LangGraph and Google's Gemini AI that combin
 
 ## Agent Implementations
 
+### Seminar examples
+
+- [Multi-agent collaboration](multi-agent-collaboration/README.md): a supervisor delegates to crypto, weather, and maths ReAct agents built on LangGraph, then combines their results, with visible logs.
+- [Autonomous agent](autonomous-agent/README.md): watches `temp/` for PDF and Markdown files, automatically uses Gemini to convert them to HTML, and saves pages in `data/`.
+
+Each folder contains readable Python code, API setup instructions, and a seminar walkthrough.
+
 This project includes two different agent implementations:
 
 ### 1. LangGraph Agent (`agent.ipynb`)
@@ -93,11 +100,12 @@ The agents can respond to natural language queries like:
 
 ## Project Structure
 
+- `tools/`: Shared plain Python functions for all agent examples; `tools/main.py` exports individual functions and `ALL_TOOLS`. See the [shared tools walkthrough](tools/README.md).
 - `agent.ipynb`: Main notebook containing the multi-tool agent implementation using LangGraph
 - `gemini_agent.ipynb`: **NEW!** Function calling agent implementation using Google Gemini AI with native function calling capabilities
 - `rag.ipynb`: RAG system notebook for processing PDF documents and generating embeddings
 - `rag.py`: Core RAG implementation with PDF processing, text splitting, and vector search
-- `tools.py`: Utility functions for weather, cryptocurrency, and knowledge base operations
+- `tools/weather.py`, `tools/crypto.py`, `tools/knowledge_base.py`, `tools/maths.py`: Common tool implementations used by the examples
 - `prompt.py`: System prompts and instructions for the AI agents
 - `hec_outline.pdf`: Educational document (Pakistan Universities curriculum outline)
 - `hec_outline_embeddings.json`: Pre-generated embeddings for the knowledge base

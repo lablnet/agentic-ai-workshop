@@ -1,9 +1,13 @@
 import os
+import sys
+from pathlib import Path
 
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.agents import create_agent
-from helper import get_crypto_price
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from tools.main import get_crypto_price
 
 load_dotenv(override=True)
 

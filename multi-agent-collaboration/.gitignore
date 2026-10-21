@@ -1,0 +1,7 @@
+.env
+.venv/
+__pycache__/
+collaboration.log
+seminar_script.md
+team_graph.mmd
+answer.md

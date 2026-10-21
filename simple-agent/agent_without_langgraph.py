@@ -1,7 +1,11 @@
 import os
+import sys
+from pathlib import Path
 from dotenv import load_dotenv
 from google import genai
-from helper import get_crypto_price
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from tools.main import get_crypto_price
 
 load_dotenv(override=True)
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
