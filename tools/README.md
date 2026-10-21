@@ -1,39 +1,15 @@
 # Shared tools
 
-All agent examples import their tools from this folder. These are ordinary Python functions.
+Setup, run commands, and import examples are in the [root README](../README.md#shared-tools-and-project-layout).
 
-```text
-tools/
-├── main.py            # Imports all tools and provides ALL_TOOLS
-├── weather.py         # get_weather(location)
-├── crypto.py          # get_crypto_price(coin="bitcoin")
-├── maths.py           # calculate(a, b, operation)
-└── knowledge_base.py  # search_in_knowledge_base(query)
-```
+These are ordinary Python functions with type hints and docstrings. LangChain and Gemini derive their tool schemas automatically, without `@tool` decorators.
 
-Choose individual functions:
+| File | Function | Purpose |
+| --- | --- | --- |
+| `main.py` | `ALL_TOOLS` and individual exports | Collect the shared functions |
+| `weather.py` | `get_weather(location)` | Current weather from Open-Meteo |
+| `crypto.py` | `get_crypto_price(coin)` | Current USD price from CoinGecko |
+| `maths.py` | `calculate(a, b, operation)` | Basic arithmetic |
+| `knowledge_base.py` | `search_in_knowledge_base(query)` | Search saved HEC document embeddings |
 
-```python
-from tools.main import get_crypto_price, get_weather
-
-agent = create_agent(model=llm, tools=[get_crypto_price, get_weather])
-```
-
-Or load the full list:
-
-```python
-from tools.main import ALL_TOOLS
-
-agent = create_agent(model=llm, tools=ALL_TOOLS)
-```
-
-The same functions work with the Gemini SDK:
-
-```python
-from tools.main import get_crypto_price
-
-chat = client.chats.create(
-    model="gemini-2.5-flash",
-    config={"tools": [get_crypto_price]},
-)
-```
+Importing the package does not call APIs or load the knowledge base. RAG libraries and saved embeddings load only when search is called. The embedding file is located relative to the repository, independent of the working directory.

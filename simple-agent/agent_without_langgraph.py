@@ -1,17 +1,15 @@
 import os
-import sys
 from pathlib import Path
 from dotenv import load_dotenv
 from google import genai
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from tools.main import get_crypto_price
 
-load_dotenv(override=True)
+load_dotenv(Path(__file__).resolve().parents[1] / ".env", override=True)
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 chat = client.chats.create(
-    model="gemini-2.5-flash",
+    model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
     config={"tools": [get_crypto_price]}
 )
 

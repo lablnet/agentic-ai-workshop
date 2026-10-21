@@ -11,37 +11,7 @@ One **Supervisor** delegates the user's task to three specialist **ReAct agents*
 
 Each agent is created with `create_agent`. This is the current supported ReAct-style agent API, built on LangGraph. Every specialist can call its tool, read the result, and answer. The supervisor has its own agent loop and calls specialists as tools. The agents stay separate internally while providing one interface to the user.
 
-## Run
-
-Use Python 3.10 or newer. From the repository root:
-
-```bash
-cd multi-agent-collaboration
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-# Edit .env and add your Gemini API key.
-python agent.py
-```
-
-The default question asks for Bitcoin's price and the cost of 0.1 BTC, demonstrating two agents cooperating. Try different tasks:
-
-```bash
-# Only the maths specialist is needed.
-python agent.py "What is 25 multiplied by 17?"
-
-# Only the weather specialist is needed.
-python agent.py "What is the current temperature in Islamabad?"
-
-# Crypto first, then maths using the fetched price.
-python agent.py "What is Ethereum's price in USD, and what would 2 ETH cost?"
-
-# Three specialist agents can contribute to one answer.
-python agent.py "Give me Islamabad's current temperature, Bitcoin's USD price, and the cost of 0.1 BTC."
-```
-
-Model calls use the real Gemini API. Crypto prices come from CoinGecko and weather comes from Open-Meteo. External APIs can fail or rate-limit; the agents should report unavailable data. `.env` in this folder overrides exported variables. Set `GEMINI_MODEL` to change the model.
+Setup and run commands are in the [root README](../README.md#setup). All examples share the root `.venv` and `.env`.
 
 ## How delegation works
 
@@ -83,7 +53,3 @@ These are illustrative placeholders. `collaboration.log` records actual assignme
 4. Show the final `create_agent()` call: the supervisor's tools are those three wrappers.
 5. Run a maths-only question, then the default crypto + maths question. Compare which specialists are called in the logs.
 6. Explain the distinction: a normal tool executes a function; an agent tool invokes another model + tools loop before returning its answer.
-
-LangGraph runs the agent loops created by `create_agent`. Recursion limits bound both supervisor and specialist loops. A fresh specialist invocation receives the delegated task, so the supervisor must include any required numbers or context. Weather logs use the prefix `TOOL | get_weather`, and similarly for the other shared tools.
-
-Reference: [LangChain subagent pattern](https://docs.langchain.com/oss/python/langchain/multi-agent/subagents).

@@ -1,173 +1,147 @@
-# Multi-Tool Agent with RAG
+# AI Agent Seminar Examples
 
-> **⚠️ Educational Project**: This project is created for learning and educational purposes. It demonstrates the implementation of RAG (Retrieval-Augmented Generation) systems, multi-tool AI agents.
-
-A multi-purpose AI agent built with LangGraph and Google's Gemini AI that combines real-time data access with intelligent document search capabilities. The agent can help with weather information, cryptocurrency prices, and search through educational knowledge bases.
-
-## Features
-
-- 🌤️ **Weather Information**: Get current weather data for any location worldwide
-- 💰 **Cryptocurrency Prices**: Check real-time prices for various cryptocurrencies
-- 📚 **Knowledge Base Search**: Intelligent search through educational documents using RAG (Retrieval-Augmented Generation)
-- 🧠 **Semantic Search**: Advanced vector-based search with semantic understanding
-- 📄 **PDF Processing**: Extract and process text from PDF documents
-- 🔍 **Intelligent Chunking**: Smart text splitting with context preservation
-
-## Technologies Used
-
-- **LangGraph**: For building the agent framework
-- **Google Gemini AI**: As the language model
-- **Ollama**: For generating embeddings and local AI capabilities
-- **LangChain**: For document processing and text splitting
-- **PyMuPDF (fitz)**: For PDF text extraction
-- **scikit-learn**: For vector similarity calculations
-- **Geopy**: For geocoding and location services
-- **Open-Meteo API**: For weather data
-- **CoinGecko API**: For cryptocurrency prices
+Simple Python examples for a university seminar: tool calling, multi-agent collaboration, event-driven automation, and retrieval-augmented generation (RAG). Gemini provides the language model; tools are shared plain Python functions.
 
 ## Setup
 
-1. **Install Dependencies**:
-   ```bash
-   # Core dependencies
-   pip install ollama PyMuPDF langchain langchain-community scikit-learn
-   pip install langgraph langchain-google-genai geopy requests
-   
-   # Additional dependencies for Gemini function calling agent
-   pip install google-generativeai python-dotenv
-   ```
+Use Python 3.10 or newer. Run every command from the repository root. All examples share **one `.venv` and one `.env`**.
 
-2. **Install Ollama**:
-   - Download and install Ollama from [ollama.ai](https://ollama.ai)
-   - Pull the embedding model: `ollama pull mxbai-embed-large`
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -e .
+cp .env.example .env
+```
 
-3. **API Key Configuration**:
-   - Get a Google Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey)
-   - Set your api key in the .env file
+Edit the root `.env`:
 
-4. **Initialize RAG System**:
-   - Run `rag.ipynb` to process PDF documents and generate embeddings
-   - This creates the knowledge base for semantic search
+```dotenv
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-2.5-flash
+```
 
-5. **Run the Agent**:
-   - **LangGraph Agent**: Open `agent.ipynb` in Jupyter Notebook or JupyterLab and execute all cells
-   - **Gemini Function Calling Agent**: Open `gemini_agent.ipynb` in Jupyter Notebook or JupyterLab and execute all cells
+Get a key from [Google AI Studio](https://aistudio.google.com/apikey). Existing root `.env` files should be kept instead of overwritten. All examples load this root file; nested `.env` files are no longer used. The root configuration takes precedence over exported variables.
 
-## Agent Implementations
+The editable install registers the shared `tools` package. No `sys.path` edits are needed, and edits to tool functions take effect without reinstalling. Activate the root environment in each new terminal:
 
-### Seminar examples
+```bash
+source .venv/bin/activate
+```
 
-- [Multi-agent collaboration](multi-agent-collaboration/README.md): a supervisor delegates to crypto, weather, and maths ReAct agents built on LangGraph, then combines their results, with visible logs.
-- [Autonomous agent](autonomous-agent/README.md): watches `temp/` for PDF and Markdown files, automatically uses Gemini to convert them to HTML, and saves pages in `data/`.
+## Run the simple agents
 
-Each folder contains readable Python code, API setup instructions, and a seminar walkthrough.
+With LangGraph:
 
-This project includes two different agent implementations:
+```bash
+python3 simple-agent/agent_with_langgraph.py
+```
 
-### 1. LangGraph Agent (`agent.ipynb`)
-- **Framework**: Uses LangGraph for agent orchestration
-- **Pattern**: Implements ReAct (Reasoning and Acting) pattern
-- **Features**: Multi-step reasoning, tool selection, and conversation management
-- **Best for**: Complex multi-step tasks requiring reasoning chains
+With the Gemini SDK directly:
 
-### 2. Gemini Function Calling Agent (`gemini_agent.ipynb`)
-- **Framework**: Native Google Gemini function calling
-- **Pattern**: Direct function calling without external agent frameworks
-- **Features**: Simpler implementation, faster execution, built-in conversation history
-- **Best for**: Direct tool usage with minimal overhead
+```bash
+python3 simple-agent/agent_without_langgraph.py
+```
 
-Both agents provide the same functionality but use different approaches to demonstrate that we can build the agent without using any agentic framework like LangGraph or LangChain.
+Both ask for Bitcoin's current price using the same function in `tools/crypto.py`. The LangGraph example uses the supported `create_agent` API. See the [code explanation](simple-agent/README.md).
 
-## Usage
+## Run the collaborating agents
 
-The agents can respond to natural language queries like:
+```bash
+python3 multi-agent-collaboration/agent.py
+```
 
-### Weather Queries
-- "What's the weather in Islamabad?"
-- "How's the weather in New York?"
-- "Tell me the current weather in London"
+A supervisor chooses among crypto, weather, and maths ReAct agents. The default question asks for Bitcoin's USD price and the cost of 0.1 BTC: the supervisor gets the price from the crypto agent, then passes that number to the maths agent.
 
-### Cryptocurrency Queries
-- "What's the price of Ethereum?"
-- "What's the current Bitcoin price?"
-- "How much is Litecoin worth?"
+Try different routes:
 
-### Knowledge Base Queries
-- "What is the prerequisite for MSCS?"
-- "Tell me about computer science curriculum requirements"
-- "What courses are required for software engineering?"
-- "Explain the admission criteria for IT programs"
+```bash
+python3 multi-agent-collaboration/agent.py "What is 25 multiplied by 17?"
+python3 multi-agent-collaboration/agent.py "What is the current temperature in Islamabad?"
+python3 multi-agent-collaboration/agent.py "What is Ethereum's USD price, and what would 2 ETH cost?"
+python3 multi-agent-collaboration/agent.py "Give me Islamabad's temperature, Bitcoin's USD price, and the cost of 0.1 BTC."
+```
 
-## Project Structure
+Follow delegation and tool calls in the terminal or `multi-agent-collaboration/collaboration.log`. The combined answer is saved to `multi-agent-collaboration/answer.md`; each run replaces those files. External data APIs can fail or rate-limit, in which case the agents should report unavailable data.
 
-- `tools/`: Shared plain Python functions for all agent examples; `tools/main.py` exports individual functions and `ALL_TOOLS`. See the [shared tools walkthrough](tools/README.md).
-- `agent.ipynb`: Main notebook containing the multi-tool agent implementation using LangGraph
-- `gemini_agent.ipynb`: **NEW!** Function calling agent implementation using Google Gemini AI with native function calling capabilities
-- `rag.ipynb`: RAG system notebook for processing PDF documents and generating embeddings
-- `rag.py`: Core RAG implementation with PDF processing, text splitting, and vector search
-- `tools/weather.py`, `tools/crypto.py`, `tools/knowledge_base.py`, `tools/maths.py`: Common tool implementations used by the examples
-- `prompt.py`: System prompts and instructions for the AI agents
-- `hec_outline.pdf`: Educational document (Pakistan Universities curriculum outline)
-- `hec_outline_embeddings.json`: Pre-generated embeddings for the knowledge base
-- `README.md`: This documentation file
+See the [architecture and seminar walkthrough](multi-agent-collaboration/README.md).
 
-## Notes
+## Run the autonomous document agent
 
-### Educational Purpose
-This project is designed for educational and learning purposes to demonstrate:
-- Implementation of RAG (Retrieval-Augmented Generation) systems
-- Multi-tool AI agent development using LangGraph
-- Integration of various APIs and AI services
-- Document processing and vector search techniques
-- Best practices in AI application development
+```bash
+python3 autonomous-agent/agent.py
+```
 
-### Technical Implementation
-- The agent uses a ReAct (Reasoning and Acting) pattern for tool selection
-- Weather data is provided by Open-Meteo API (free tier)
-- Cryptocurrency prices are fetched from CoinGecko API
-- The agent includes error handling for API failures and invalid inputs
+Leave it running. In another terminal, from the repository root, drop a sample document into its input folder:
 
-### RAG Implementation Details
+```bash
+cp autonomous-agent/example.md autonomous-agent/temp/first-document.md
+```
 
-- **PDF Processing**: Uses PyMuPDF for efficient text extraction from PDF documents
-- **Text Chunking**: Implements intelligent text splitting with 1000-character chunks and 200-character overlap
-- **Embeddings**: Uses Ollama with `mxbai-embed-large` model for generating high-quality embeddings
-- **Vector Search**: Employs cosine similarity for semantic document retrieval
-- **Knowledge Base**: Currently contains Pakistan Universities curriculum outline (HEC document)
-- **Caching**: Embeddings are cached and saved to disk for faster subsequent searches
+The watcher automatically extracts the text, uses Gemini to format it as HTML, and writes `autonomous-agent/data/first-document.md.html`. Open that file in a browser. You can also copy a text-based PDF into `autonomous-agent/temp/`.
 
-## TODO - Future Enhancements
+- Supports UTF-8 `.md` / `.markdown` and text-based `.pdf` files. Scanned PDFs require OCR and are not supported by this demo.
+- New files wait at least two seconds to settle. Processing is sequential and uses one Gemini request per conversion.
+- Unchanged files are skipped, including after restarting. Editing a source file triggers conversion again; deleting its HTML output also requests regeneration.
+- Source files stay in `temp/`. A processing record is saved in `data/.processed.json`.
+- Empty documents and documents over 60,000 extracted characters are rejected. Invalid files are logged and retried after a content change or watcher restart. API errors stop the watcher; fix the issue and restart.
+- This converts text, not the original PDF layout or images. Check generated content for accuracy. Document text is sent to Gemini.
 
-### ✅ Completed Features
-- [x] **RAG System**: Document processing and semantic search implementation
-- [x] **Multi-Tool Agent**: Weather, cryptocurrency, and knowledge base tools
-- [x] **Agent Framework**: LangGraph-based agent with ReAct pattern
-- [x] **Function Calling Agent**: Native Google Gemini function calling implementation
+Change the polling interval if needed:
 
-### 🚀 Advanced Features to Implement
+```bash
+python3 autonomous-agent/agent.py --interval 3
+```
 
-#### Multi-Agent Systems
-- [ ] **Agent Collaboration**: Multiple specialized agents working together
-- [ ] **Agent Communication**: Inter-agent messaging and coordination protocols
-- [ ] **Agent Orchestration**: Central coordinator managing multiple agents
+Logs are appended to `autonomous-agent/autonomous.log`. Stop the watcher with **Ctrl+C**. See the [event loop and seminar walkthrough](autonomous-agent/README.md).
 
-#### Advanced RAG Enhancements
-- [ ] **Hybrid Search**: Combine semantic and keyword-based search
-- [ ] **Multi-Modal RAG**: Support for images, audio, and video documents
-- [ ] **Dynamic Retrieval**: Adaptive retrieval based on query complexity
+## Run the multi-tool and RAG notebooks
 
-#### Agent Intelligence
-- [ ] **Memory Systems**: Long-term and short-term memory for agents
-- [ ] **Learning Agents**: Agents that improve from interactions
-- [ ] **Planning Agents**: Advanced planning and goal decomposition
-- [ ] **Reasoning Chains**: Multi-step logical reasoning capabilities
-- [ ] **Self-Reflection**: Agents that can evaluate and improve their own performance
+Use the same root environment. Install the optional notebook and retrieval dependencies:
 
-### 🎯 Learning Objectives
-These enhancements will help explore:
-- Advanced AI agent architectures
-- Distributed systems and microservices
-- Multi-agent coordination algorithms
-- Advanced RAG techniques and evaluation
-- Human-AI collaboration patterns
-- Scalable AI system design
+```bash
+python3 -m pip install -e '.[rag,notebooks]'
+ollama pull mxbai-embed-large
+jupyter lab
+```
+
+Ollama must be installed and running for knowledge-base search. Open these notebooks under `multi-tool agent/`:
+
+- `agent.ipynb`: LangGraph agent for weather, crypto prices, and knowledge-base search.
+- `gemini_agent.ipynb`: native Gemini function calling for the same tasks.
+- `rag.ipynb`: process the HEC curriculum PDF and build embeddings if needed. A saved embedding file is already included.
+
+Select the kernel belonging to the root `.venv`. Do not create a separate notebook environment. Example questions: “What's the weather in Islamabad?”, “What's Ethereum's price?”, and “What is the prerequisite for MSCS?”
+
+## Shared tools and project layout
+
+```text
+.env                         # One API configuration for all examples
+.venv/                       # One Python environment for all examples
+pyproject.toml               # Shared package and dependencies
+simple-agent/                # Basic tool calling, with and without LangGraph
+multi-agent-collaboration/    # Supervisor + three specialist ReAct agents
+autonomous-agent/
+    temp/                    # Incoming PDF and Markdown files
+    data/                    # Generated HTML pages and processing history
+multi-tool agent/            # Multi-tool and RAG notebooks + saved embeddings
+tools/
+    main.py                  # Exports individual functions and ALL_TOOLS
+    crypto.py                # CoinGecko prices
+    weather.py               # Open-Meteo weather
+    maths.py                 # Arithmetic
+    knowledge_base.py        # Ollama embeddings + cosine similarity search
+```
+
+Tools use type hints and docstrings without `@tool`. LangChain and Gemini accept the functions directly. Knowledge-base libraries and saved embeddings load only when search is called. See the [shared tools explanation](tools/README.md).
+
+Import selected tools or the complete list:
+
+```python
+from tools.main import get_crypto_price, get_weather
+from tools.main import ALL_TOOLS
+
+agent = create_agent(model=llm, tools=[get_crypto_price, get_weather])
+# Or: agent = create_agent(model=llm, tools=ALL_TOOLS)
+```
+
+This repository is an educational project. It demonstrates small, readable implementations suitable for walking through during a seminar.

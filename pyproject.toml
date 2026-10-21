@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "seminar-agent-tools"
+version = "0.1.0"
+description = "Shared tools and dependencies for the seminar agent examples"
+requires-python = ">=3.10"
+dependencies = [
+    "google-genai>=1.0,<2",
+    "langchain>=1.0,<2",
+    "langchain-google-genai>=4.0,<5",
+    "langgraph>=1.0,<2",
+    "python-dotenv>=1.0,<2",
+    "requests>=2.31,<3",
+    "pypdf>=5,<7",
+    "bleach>=6,<7",
+]
+
+[project.optional-dependencies]
+rag = ["numpy>=1.26", "ollama>=0.4"]
+notebooks = [
+    "jupyterlab>=4",
+    "google-generativeai>=0.8,<0.9",
+    "geopy>=2",
+    "networkx>=3",
+    "matplotlib>=3",
+    "PyMuPDF>=1.24",
+    "langchain-community>=0.3",
+    "langchain-text-splitters>=1",
+    "scikit-learn>=1.4",
+]
+
+[tool.setuptools]
+packages = ["tools"]

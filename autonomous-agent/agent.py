@@ -17,8 +17,6 @@ from google.genai.errors import APIError
 from pydantic import BaseModel
 from pypdf import PdfReader
 
-load_dotenv(override=True)
-
 class Page(BaseModel):
     title: str
     body_html: str
@@ -129,14 +127,14 @@ def scan_folder(client, folder, processed, failed):
 
 def main():
     folder = Path(__file__).resolve().parent
-    load_dotenv(folder / ".env")
+    load_dotenv(folder.parent / ".env", override=True)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--interval", type=float, default=2, help="Seconds between folder scans")
     args = parser.parse_args()
     if args.interval < 0.5:
         parser.error("--interval must be at least 0.5 seconds.")
     if not os.getenv("GEMINI_API_KEY"):
-        parser.error("Set GEMINI_API_KEY in this folder's .env or your environment.")
+        parser.error("Set GEMINI_API_KEY in the root .env file.")
     logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(message)s",
                         handlers=[logging.StreamHandler(),
                                   logging.FileHandler(folder / "autonomous.log")])

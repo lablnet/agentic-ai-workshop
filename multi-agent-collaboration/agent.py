@@ -3,14 +3,12 @@
 import argparse
 import logging
 import os
-import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
 from langchain.agents import create_agent
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from tools.main import calculate, get_crypto_price, get_weather
 
 
@@ -74,13 +72,13 @@ def build_team(model):
 
 def main():
     folder = Path(__file__).resolve().parent
-    load_dotenv(folder / ".env", override=True)
+    load_dotenv(folder.parent / ".env", override=True)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("question", nargs="?", default=
                         "What is the current Bitcoin price in USD, and how much would 0.1 BTC cost?")
     args = parser.parse_args()
     if not os.getenv("GEMINI_API_KEY"):
-        parser.error("Set GEMINI_API_KEY in this folder's .env or your environment.")
+        parser.error("Set GEMINI_API_KEY in the root .env file.")
     logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(message)s",
                         handlers=[logging.StreamHandler(),
                                   logging.FileHandler(folder / "collaboration.log", mode="w")])
