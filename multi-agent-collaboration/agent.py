@@ -31,7 +31,7 @@ def run_specialist(agent, name, task):
     # Invoke the agent
     result = agent.invoke(
         {"messages": [{"role": "user", "content": task}]},
-        config={"recursion_limit": 12},
+        config={"recursion_limit": 12}, # This is the maximum number of times the agent can call itself.
     )
     # Get the answer from the agent
     answer = result["messages"][-1].text
