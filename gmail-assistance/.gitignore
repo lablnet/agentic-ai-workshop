@@ -1,0 +1,9 @@
+credentials.json
+token.json
+processed.json
+processed.pending
+__pycache__/
+
+# This is application source, not an installed Python library directory.
+!lib/
+!lib/*.py

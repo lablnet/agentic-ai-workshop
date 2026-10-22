@@ -150,6 +150,78 @@ In `demo`, the assistant should recall Ali and Python. In `other`, it should say
 
 Memory is kept in RAM using LangGraph checkpointing and is lost when the program exits. It is saved conversation history, not retraining the model or persistent personal memory. See the [code walkthrough](memory-agent/README.md).
 
+## Gmail assistance live-coding scaffold
+
+This example includes working Gmail housekeeping and an email agent. The agent implementation is marked so you can remove it before live coding. It uses the same root `.venv` and `.env` as the other demos.
+
+### Prepare before the workshop
+
+```bash
+python3 -m pip install -e '.[gmail]'
+```
+
+1. Create or select a Google Cloud project and enable the **Gmail API**.
+2. Configure the OAuth consent screen. For a personal testing app, add the Gmail account you will use as a test user.
+3. Create an OAuth client of type **Desktop app**, download its JSON, and save it as `gmail-assistance/credentials.json`.
+4. Prepare login before the workshop:
+
+```bash
+python3 gmail-assistance/auth.py
+```
+
+Sign in to the intended account in the browser and grant the requested permissions. This caches `gmail-assistance/token.json` and prints the connected email address. It does not process or send email. The app requests `gmail.readonly` plus `gmail.compose`, which support reading messages and creating drafts/sending summaries. No Gmail password is stored in `.env`. See [Google's Python OAuth quickstart](https://developers.google.com/workspace/gmail/api/quickstart/python).
+
+### Code the agent live
+
+The files you use for testing and live coding are:
+
+```text
+gmail-assistance/
+    main.py        # Starts the application
+    auth.py        # Standalone Gmail login
+    agent.py       # LIVE CODING: build_email_agent() and analyze_email()
+    tool.py        # Prepared Gmail draft and self-summary actions
+    prompt.py      # LIVE CODING: email assistant instructions
+    lib/           # OAuth, MIME parsing, polling, schemas and processed-ID tracking
+```
+
+The prompt and both agent functions are complete. In `agent.py`, comments labelled `TODO BEFORE LIVE CODING` and `BEGIN/END LIVE-CODING BLOCK` identify the code you can remove and rewrite during the workshop:
+
+1. `build_email_agent(model, tools)`: return `create_agent()` with `model=model`, `tools=tools`, the prompt, and `ToolStrategy(EmailAnalysis)`. The watcher supplies two bound Gmail tools for each email.
+2. `analyze_email(agent, email)`: invoke the agent with the email fields and return `result["structured_response"]` as `EmailAnalysis`.
+
+The agent only prepares structured output:
+
+```python
+summary: str
+needs_reply: bool
+draft_reply: str | None
+```
+
+`tool.py` creates plain-function tools: `create_reply_draft(summary, reply)` and `send_summary_to_self(summary)`. The agent chooses and invokes one tool. Gmail credentials, the original message and recipient addresses are bound in Python and are not model arguments. Tool inputs are validated before writes. Only one action attempt is permitted per email during that run, even if the model requests tools in parallel. The watcher verifies completion but does not perform a second action. No workshop lookup is involved.
+
+No TODO blocks execution: you can test the agent immediately. Before the workshop, remove the marked implementation blocks and rewrite them live. Authentication works separately through `auth.py` and does not need a Gemini key. Your previous `python3 gmail-assistance/agent.py --auth-only` command also remains supported.
+
+### Test or demonstrate the agent
+
+```bash
+python3 gmail-assistance/main.py
+```
+
+Wait for `WATCHING`, then send a new email **from another account** with `AI-DEMO` in the subject, for example `AI-DEMO: Seminar question`. Existing matching inbox messages are skipped on the first run. On later runs, the saved processed-message list is reused, so messages arriving while the watcher was stopped can be processed too.
+
+- If `needs_reply` is true, the app creates a Gmail reply draft. Open Gmail Drafts to review and manually send it.
+- If false, it sends the summary to the authenticated account's own email address. There is no reply to the original sender.
+- Both branches print the summary in the terminal. The model never selects Gmail recipients.
+
+Try one email asking a question and one informational notice. The watcher polls every ten seconds; `--interval 5` changes that interval. Stop with Ctrl+C. Only matching inbox messages are read; unread/read status is unchanged. Attachments are not processed, and email bodies over 20,000 characters are rejected.
+
+Processed IDs are stored in `gmail-assistance/processed.json`. Own/sent messages and assistant-generated summaries are excluded to avoid a summary loop. Successful actions are recorded immediately, before the model produces its final answer. Errors stop processing rather than silently retrying writes. If an agent finishes without calling a Gmail tool, or its final structured output differs from the action performed, the watcher reports an error. In this small demo, a crash after a successful Gmail action but before saving its processed ID can cause a duplicate on restart; check Drafts/Sent before retrying an uncertain action.
+
+OAuth credentials, tokens, and processed IDs are Git-ignored. Message bodies are sent to Gemini when you implement the LangGraph agent. Use sample workshop emails. Do not delete the processing state casually: removing it creates a new baseline of existing matching emails.
+
+See the [file-by-file scaffold walkthrough](gmail-assistance/README.md). Gmail reply threading follows [Google's thread requirements](https://developers.google.com/workspace/gmail/api/guides/threads).
+
 ## Run the multi-tool and RAG notebooks
 
 Use the same root environment. Install the optional notebook and retrieval dependencies:
@@ -179,6 +251,7 @@ multi-agent-collaboration/    # Supervisor + three specialist ReAct agents
 guardrails-agent/            # Input checks, course scope and output validation
 human-in-the-loop-agent/     # Draft, pause, human decision, then local save
 memory-agent/                # Conversation history isolated by thread ID
+gmail-assistance/            # Real Gmail plumbing + live-coding agent TODOs
 autonomous-agent/
     temp/                    # Incoming PDF and Markdown files
     data/                    # Generated HTML pages and processing history
