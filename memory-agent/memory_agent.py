@@ -2,6 +2,9 @@
 
 from langchain.agents import create_agent
 from langgraph.checkpoint.memory import InMemorySaver
+# https://github.com/lablnet/langgraph-checkpoint-mongodb
+# MongoDb checkpointer in typescript.
+
 
 from prompts import MEMORY_PROMPT
 
