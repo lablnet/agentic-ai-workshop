@@ -11,7 +11,6 @@ from prompt import EMAIL_PROMPT
 
 def build_email_agent(model, tools):
     """Build a LangGraph-backed agent that summarizes emails and drafts replies."""
-    # TODO
     return create_agent(
         model=model,
         tools=tools,
@@ -23,7 +22,6 @@ def build_email_agent(model, tools):
 def analyze_email(agent, email: IncomingEmail) -> EmailAnalysis:
     """Let the agent choose a Gmail tool, then return its structured result."""
     content = json.dumps({"sender": email.sender, "subject": email.subject, "body": email.body})
-    # TODO
     result = agent.invoke(
         {"messages": [{"role": "user", "content": content}]},
         config={"recursion_limit": 12},

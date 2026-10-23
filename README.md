@@ -185,8 +185,6 @@ gmail-assistance/
     lib/           # OAuth, MIME parsing, polling, schemas and processed-ID tracking
 ```
 
-The prompt and both agent functions are complete. In `agent.py`, comments labelled `TODO BEFORE LIVE CODING` and `BEGIN/END LIVE-CODING BLOCK` identify the code you can remove and rewrite during the workshop:
-
 1. `build_email_agent(model, tools)`: return `create_agent()` with `model=model`, `tools=tools`, the prompt, and `ToolStrategy(EmailAnalysis)`. The watcher supplies two bound Gmail tools for each email.
 2. `analyze_email(agent, email)`: invoke the agent with the email fields and return `result["structured_response"]` as `EmailAnalysis`.
 
@@ -200,7 +198,6 @@ draft_reply: str | None
 
 `tool.py` creates plain-function tools: `create_reply_draft(summary, reply)` and `send_summary_to_self(summary)`. The agent chooses and invokes one tool. Gmail credentials, the original message and recipient addresses are bound in Python and are not model arguments. Tool inputs are validated before writes. Only one action attempt is permitted per email during that run, even if the model requests tools in parallel. The watcher verifies completion but does not perform a second action. No workshop lookup is involved.
 
-No TODO blocks execution: you can test the agent immediately. Before the workshop, remove the marked implementation blocks and rewrite them live. Authentication works separately through `auth.py` and does not need a Gemini key. Your previous `python3 gmail-assistance/agent.py --auth-only` command also remains supported.
 
 ### Test or demonstrate the agent
 
@@ -251,7 +248,7 @@ multi-agent-collaboration/    # Supervisor + three specialist ReAct agents
 guardrails-agent/            # Input checks, course scope and output validation
 human-in-the-loop-agent/     # Draft, pause, human decision, then local save
 memory-agent/                # Conversation history isolated by thread ID
-gmail-assistance/            # Real Gmail plumbing + live-coding agent TODOs
+gmail-assistance/            # Real Gmail plumbing
 autonomous-agent/
     temp/                    # Incoming PDF and Markdown files
     data/                    # Generated HTML pages and processing history

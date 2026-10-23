@@ -38,5 +38,3 @@ flowchart TD
 ```
 
 Tool arguments are validated before Gmail writes. A lock permits one action attempt per email during a run, including parallel tool calls. Success is persisted before returning control to the model, so a later generation failure does not cause the successful action to be processed again automatically. A crash between Gmail accepting a write and saving its ID still requires manual reconciliation; see the root README.
-
-Both agent functions are implemented. `TODO BEFORE LIVE CODING` and `BEGIN/END LIVE-CODING BLOCK` comments mark the sections you can remove and rewrite during the workshop. Running the watcher now processes fresh matching emails and performs the selected Gmail action. Authentication works independently. No workshop lookup or unrelated JSON file is used.

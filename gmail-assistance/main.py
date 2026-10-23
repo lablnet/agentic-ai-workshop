@@ -46,5 +46,3 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         print("\nWatcher stopped.")
-    except NotImplementedError as error:
-        raise SystemExit(f"LIVE-CODING TODO | {error}") from None
