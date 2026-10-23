@@ -147,6 +147,8 @@ def main():
     processed = json.loads(state.read_text(encoding="utf-8")) if state.exists() else {}
     failed = {}
     logging.info("WATCHING | %s | drop a PDF or Markdown file here", folder / "temp")
+
+    # Creates the Gemini API client and closes its connections automatically when you leave the block
     with genai.Client(api_key=os.environ["GEMINI_API_KEY"]) as client:
         # Event loop: detect new/changed docs, convert, write atomically to data/.
         while True:
